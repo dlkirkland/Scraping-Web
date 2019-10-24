@@ -186,15 +186,30 @@ summary {
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>Let’s investigate Google Scholar’s data on the impact of my (meager) research publications!</p>
-<pre><code>## Loading required package: xml2</code></pre>
+<pre class="r"><code>include &lt;- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include(&quot;rvest&quot;)
+include(&quot;tidyr&quot;)</code></pre>
 <p>First, let’s load the html from my Scholar page:</p>
-<pre class="r"><code>scholar_html &lt;- read_html(&quot;https://scholar.google.com/citations?user=KmIt5HIAAAAJ&amp;hl=en&quot;)</code></pre>
+<pre class="r"><code>my_url &lt;- &quot;https://scholar.google.com/citations?user=KmIt5HIAAAAJ&amp;hl=en&quot;
+scholar_html &lt;- read_html(my_url)</code></pre>
 <p>We should note that this page only (initially) loads the top 20 articles, sorted by most citations. However, that is a good enough starting place. From this page, let’s “scrape” the data that matters: <em>article title</em>, <em>citations</em>, <em>year</em></p>
 <pre class="r"><code>publications &lt;- scholar_html %&gt;% html_nodes(&quot;.gsc_a_tr&quot;)
 
-article_titles &lt;- publications %&gt;% html_nodes(&quot;td.gsc_a_t &gt; a&quot;) %&gt;% html_text() %&gt;% as.character()
-citations &lt;- publications %&gt;% html_nodes(&quot;td.gsc_a_c &gt; a&quot;) %&gt;% html_text() %&gt;% as.integer()
-years &lt;- publications %&gt;% html_nodes(&quot;td.gsc_a_y &gt; span&quot;) %&gt;% html_text() %&gt;% as.integer()
+article_titles &lt;- publications %&gt;% 
+                    html_nodes(&quot;td.gsc_a_t &gt; a&quot;) %&gt;% 
+                    html_text()
+citations &lt;- publications %&gt;% 
+              html_nodes(&quot;td.gsc_a_c &gt; a&quot;) %&gt;% 
+              html_text() %&gt;% 
+              as.integer()
+years &lt;- publications %&gt;% 
+          html_nodes(&quot;td.gsc_a_y &gt; span&quot;) %&gt;% 
+          html_text() %&gt;% 
+          as.integer()
 
 research &lt;- tibble(year= years, title= article_titles, citations= citations)</code></pre>
 </div>

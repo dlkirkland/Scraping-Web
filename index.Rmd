@@ -9,7 +9,7 @@ output:
 Let's investigate Google Scholar's data on the impact of my (meager) 
 research publications!
 
-```{r, echo=FALSE}
+```{r, results='hide', message=FALSE}
 include <- function(library_name){
   if( !(library_name %in% installed.packages()) )
     install.packages(library_name) 
@@ -21,7 +21,8 @@ include("tidyr")
 
 First, let's load the html from my Scholar page:
 ```{r}
-scholar_html <- read_html("https://scholar.google.com/citations?user=KmIt5HIAAAAJ&hl=en")
+my_url <- "https://scholar.google.com/citations?user=KmIt5HIAAAAJ&hl=en"
+scholar_html <- read_html(my_url)
 ```
 We should note that this page only (initially) loads the top 20 articles, sorted by most citations.
 However, that is a good enough starting place. From this page, let's "scrape" the data that matters:
@@ -30,9 +31,17 @@ However, that is a good enough starting place. From this page, let's "scrape" th
 ```{r}
 publications <- scholar_html %>% html_nodes(".gsc_a_tr")
 
-article_titles <- publications %>% html_nodes("td.gsc_a_t > a") %>% html_text() %>% as.character()
-citations <- publications %>% html_nodes("td.gsc_a_c > a") %>% html_text() %>% as.integer()
-years <- publications %>% html_nodes("td.gsc_a_y > span") %>% html_text() %>% as.integer()
+article_titles <- publications %>% 
+                    html_nodes("td.gsc_a_t > a") %>% 
+                    html_text()
+citations <- publications %>% 
+              html_nodes("td.gsc_a_c > a") %>% 
+              html_text() %>% 
+              as.integer()
+years <- publications %>% 
+          html_nodes("td.gsc_a_y > span") %>% 
+          html_text() %>% 
+          as.integer()
 
 research <- tibble(year= years, title= article_titles, citations= citations)
 ```
