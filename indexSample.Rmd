@@ -1,0 +1,60 @@
+---
+title: "How Great Am I?"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Introduction
+Let's investigate Google Scholar's data on the impact of my (meager) 
+research publications!
+
+```{r, results='hide', message=FALSE}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("rvest")
+include("tidyr")
+```
+
+First, let's load the html from my Scholar page:
+```{r}
+my_url <- "https://scholar.google.com/citations?user=KmIt5HIAAAAJ&hl=en"
+scholar_html <- read_html(my_url)
+```
+We should note that this page only (initially) loads the top 20 articles, sorted by most citations.
+However, that is a good enough starting place. From this page, let's "scrape" the data that matters:
+*article title*, *citations*, *year*
+
+```{r}
+publications <- scholar_html %>% html_nodes(".gsc_a_tr")
+
+article_titles <- publications %>% 
+                    html_nodes("td.gsc_a_t > a") %>% 
+                    html_text()
+citations <- publications %>% 
+              html_nodes("td.gsc_a_c > a") %>% 
+              html_text() %>% 
+              as.integer()
+years <- publications %>% 
+          html_nodes("td.gsc_a_y > span") %>% 
+          html_text() %>% 
+          as.integer()
+
+research <- tibble(year= years, title= article_titles, citations= citations)
+```
+
+## Analysis
+```{r}
+print(research)
+```
+How many citations are there per paper?
+```{r}
+mean(research$citations)
+```
+
+## Conclusion
+
+How great am I? *The Data says*... **meh.**

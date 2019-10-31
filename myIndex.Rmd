@@ -1,0 +1,92 @@
+---
+name: Daniel Kirkland
+title: "WebScrapingFun"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Introduction
+Let's attempt to scrape some data from the CSU Chico course scheduling website.  
+
+```{r, results='hide', message=FALSE}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("rvest")
+include("tidyr")
+```
+
+First, let's load the html links from the spring 2019 and 2020 semesters:
+```{r}
+my_url1 <- read_html("http://ems.csuchico.edu/APSS/schedule/spr2019/CSCI.shtml")
+#spring2019 <- read_html(my_url1)
+
+my_url2 <- read_html("http://ems.csuchico.edu/APSS/schedule/spr2020/CSCI.shtml")
+#spring2020 <- read_html(my_url2)
+```
+On each of the pages whose links have been imported, there exists tables which communicate information about the courses being taught by the computer science department at CSU Chico during the 2019 and 2020 spring semesters.  We will be interested in scraping only enough data from the table to compare the difference in teaching time for each instructor between the two semesters.  
+This can be evaluated by number of courses taught, as well as total teaching time for each instructor for both semesters.  The observation information of interest is: 
+
+*Title*, *Instructor*, *Time* 
+
+```{r}
+##Spring 2019 courses taught
+#******(Note: we can use 'copy selector' from the 'inspect element' data to obtain the exact name needed for #******aliasing. Ex. #maintable uses # to indicate 'id=____', vs 'td._____'td.Instructor)
+courseListingSP19 <- my_url1 %>% html_node("#maintable")
+###Scraping the Instructor data
+instructor_name <- courseListingSP19 %>% 
+                    html_nodes("td.Instructor") %>% 
+                    html_text()
+
+###Scraping the Title data
+course_taught <- courseListingSP19 %>% 
+              html_nodes("td.title") %>% 
+              html_text()  
+
+###Scraping the Time data
+teaching_hours <- courseListingSP19 %>% 
+          html_nodes("td.time") %>% 
+          html_text() 
+
+##Spring 2020 courses taught
+courseListingSP20 <- my_url2 %>% html_nodes("#maintable")
+
+###Scraping the Instructor data
+instructor_name <- courseListingSP20 %>% 
+                    html_nodes("td.Instructor") %>% 
+                    html_text()
+
+###Scraping the Title data 
+course_taught <- courseListingSP20 %>% 
+              html_nodes("td.title") %>% 
+              html_text() 
+              
+              
+###Scraping the Time data              
+teaching_hours <- courseListingSP20 %>% 
+          html_nodes("td.time") %>% 
+          html_text()  
+          
+
+###Creating tibbles for the 2019 and 2020 semesters
+spring2019classes <- tibble(name= instructor_name, course_taught= course_taught, teaching_time= teaching_hours)
+
+spring2020classes <- tibble(name= instructor_name, course_taught= course_taught, teaching_time= teaching_hours)
+
+```
+
+## Analysis
+```{r}
+print(research)
+```
+How many citations are there per paper?
+```{r}
+mean(research$citations)
+```
+
+## Conclusion
+
+How great am I? *The Data says*... **meh.**
